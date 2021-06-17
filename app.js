@@ -5,24 +5,23 @@ let sentenceCounter = 0;
 let letterCounter = 0;
 let letterString = sentences[sentenceCounter].toString();
 let letterStringLength = letterString.length
-let numberOfMistakes = 0;
+let wrongLetters = 0;
 let startTime;
 let endTime;
 let minutes;
+let sentenceCount = sentences.length;
+let letterCount = sentences.join('').split('').length;
+let wordCount = sentences.join(' ').split(' ').length;
+let averageWordLength = letterCount/wordCount;
 let wordsPerMinute;
 let gameActiveCount = false;
-
 
 sentence.html(letterString);
 
 target.html(letterString[letterCounter])
 
-$( document ).ready(function() {
-      $("#button-group").hide();
-      $("#keyboard-upper-container").hide();
+$("#keyboard-upper-container").hide();
       
-
-});
 $( document).keydown(function (e) {
     if (e.keyCode == 16) {
         $("#keyboard-lower-container").hide();
@@ -37,62 +36,29 @@ $( document ).keyup(function (e) {
     }
   });
 
-function refreshSentence(){
-  sentenceCounter += 1
-
-  if (sentenceCounter < 5) {
-
-     $( "#feedback" ).empty()
-     letterString = sentences[sentenceCounter].toString();
-     letterStringLength = letterString.length
-     sentence.html(letterString);
-     target.html(letterString[0])
-     letterCounter = 0;
-     $('#yellow-block').animate({left: "20px"});
 
 
-  } else {
-    //calculate end time and words per minute
-    gameActiveCount = false;
-    endTime = Date.now();
-    minutes = (endTime - startTime) / 1000 / 60;
-    wordsPerMinute = 54 / minutes - 2 * numberOfMistakes;
-     $('#yellow-block').animate({opacity: "0%"}, 1500);
-     $( "#sentence" ).empty()
-     $( "#target-letter" ).empty()
-     $("#button-group").show();
-     $( "#sentence" ).html("<p>Your words per minute: " +  wordsPerMinute + " </p>")
-  }
- 
-}
-
-function wrongLetter(){
-  numberOfMistakes += 1
-  $('#yellow-block').animate({left: "+=18px"}, 10);
-  $('#feedback').append('<span class="glyphicon glyphicon glyphicon-remove"></span>');
-if (letterCounter > letterStringLength - 2) {refreshSentence();
-  } else {
- 
-     letterCounter += 1;
-     target.html(letterString[letterCounter]); 
-  };
-  };
-
-
-function checknextLetter() {
-  $('#yellow-block').animate({left: "+=18px"}, 10);
-  $('#feedback').append('<span class="glyphicon glyphicon glyphicon-ok"></span>');
-
-if (letterCounter > letterStringLength - 2) {
-  refreshSentence();
-  } else {
-     letterCounter += 1;
-     target.html(letterString[letterCounter]); 
-  };
-}
+$(document).keypress(function (e) {
+    // where it all begins!
+    let currentKey = e.which;
     
+    if (gameActiveCount === false && sentenceCounter < sentenceCount) {
+      startTime = Date.now();
+      gameActiveCount = true;
+    }
+    
+    inputKey(e)
+
+    // yellow color
+    $('#' + currentKey).css("background-color", "yellow")
+    setTimeout(function () {
+      $('#' + currentKey).css("background-color", "")
+    }, 120);
+    
+  });
 
 function inputKey(e) {
+    // comparing if pressed key matches expected key
   if (gameActiveCount === true) {
         let currentLetter = target.html();
         let currentKey = e.which;
@@ -101,30 +67,65 @@ function inputKey(e) {
   }
       };
 
-$(document).keypress(function (e) {
-        
-        let currentKey = e.which;
-        
-        if (gameActiveCount === false) {
-          startTime = Date.now();
-          gameActiveCount = true;
-        }
-        
-        inputKey(e)
-        // yellow color
-        $('#' + currentKey).css("background-color", "yellow")
-        setTimeout(function () {
-          $('#' + currentKey).css("background-color", "")
-        }, 120);
-        
-      });
-      
 
-function resetGame() {
-  second = 0;
-  counter = setInterval(function(){
-    second++;
-  }, 1000);
-  $("#button-group").hide();
-  $( "#feedback" ).empty()
-}
+function checknextLetter() {
+    //if the key is correct, go to the next letter or sentence
+    $('#yellow-block').animate({left: "+=18px"}, 10);
+    $('#feedback').append('<span class="glyphicon glyphicon glyphicon-ok"></span>');
+  
+  if (letterCounter > letterStringLength - 2) {
+    refreshSentence();
+    } else {
+       letterCounter += 1;
+       target.html(letterString[letterCounter]); 
+    };
+  }
+
+
+
+function wrongLetter(){
+    // if the key is wrong, make a mark of it and go to the next letter or sentence
+    wrongLetters += 1
+    $('#yellow-block').animate({left: "+=18px"}, 10);
+    $('#feedback').append('<span class="glyphicon glyphicon glyphicon-remove"></span>');
+  if (letterCounter > letterStringLength - 2) {refreshSentence();
+    } else {
+   
+       letterCounter += 1;
+       target.html(letterString[letterCounter]); 
+    };
+    };
+
+
+function refreshSentence(){
+    //goes to next sentence or ends game
+    sentenceCounter += 1
+  
+    if (sentenceCounter < sentenceCount) {
+  
+       $( "#feedback" ).empty()
+       letterString = sentences[sentenceCounter].toString();
+       letterStringLength = letterString.length
+       sentence.html(letterString);
+       target.html(letterString[0])
+       letterCounter = 0;
+       $('#yellow-block').animate({left: "20px"});
+  
+  
+    } else {
+      //calculate end time and words per minute
+      gameActiveCount = false;
+      endTime = Date.now();
+      minutes = (endTime - startTime) / 1000 / 60;
+      wordsPerMinute = (letterCount - wrongLetters) / averageWordLength / minutes;
+       $('#yellow-block').animate({opacity: "0%"}, 1500);
+       $( "#sentence" ).empty()
+       $( "#target-letter" ).empty()
+       $("#button-group").append('<button id="clickNewGame">Click to Play Again!</button>');
+       $("#clickNewGame").on("click", function(){
+        location.reload();
+       })
+       $( "#sentence" ).html("<p>Your words per minute: " +  wordsPerMinute.toFixed(2) + " </p>")
+    }
+   
+  }
