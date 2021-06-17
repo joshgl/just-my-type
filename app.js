@@ -5,11 +5,11 @@ let sentenceCounter = 0;
 let letterCounter = 0;
 let letterString = sentences[sentenceCounter].toString();
 let letterStringLength = letterString.length
-let numberOfWords = 54;
 let numberOfMistakes = 0;
 let startTime;
-let startDate;
-let endDate;
+let endTime;
+let minutes;
+let wordsPerMinute;
 let gameActiveCount = false;
 
 
@@ -54,17 +54,14 @@ function refreshSentence(){
   } else {
     //calculate end time and words per minute
     gameActiveCount = false;
-    let endTime = Date.now();
-    let difference =  endTime - startTime;
-    let minutes = (endTime - startTime) / 1000 / 60;
-    let wordsPerMinute = numberOfWords / minutes; // - 2 * numberOfMistakes
-    console.log(wordsPerMinute);
-
+    endTime = Date.now();
+    minutes = (endTime - startTime) / 1000 / 60;
+    wordsPerMinute = 54 / minutes - 2 * numberOfMistakes;
      $('#yellow-block').animate({opacity: "0%"}, 1500);
      $( "#sentence" ).empty()
      $( "#target-letter" ).empty()
      $("#button-group").show();
-     $( "#sentence" ).html("<p>Your words per minute: " +  minutes + " </p>")
+     $( "#sentence" ).html("<p>Your words per minute: " +  wordsPerMinute + " </p>")
   }
  
 }
@@ -95,10 +92,7 @@ if (letterCounter > letterStringLength - 2) {
 }
     
 
-        
-
 function inputKey(e) {
-  // as long as game is still active, check the pressed key against the expected key and determine if it is correct or incorrect
   if (gameActiveCount === true) {
         let currentLetter = target.html();
         let currentKey = e.which;
@@ -106,7 +100,6 @@ function inputKey(e) {
         if (currentKey == expectedKey) { checknextLetter() } else { wrongLetter() };
   }
       };
-
 
 $(document).keypress(function (e) {
         
